@@ -67,7 +67,7 @@ const EditCar: React.FC = () => {
         let value: string | number | boolean | dayjs.Dayjs | null = detail.value
 
         if (detail.columnType === "DATE" && value) {
-          value = dayjs(value as string)
+          value = dayjs(value)
         }
 
         if (detail.columnType === "DOUBLE" && value && typeof value === 'string') {
@@ -123,9 +123,8 @@ const EditCar: React.FC = () => {
 
           let formattedValue = value
 
-          // Format date values
-          if (field.columnType === "DATE" && value && dayjs.isDayjs(value)) {
-            formattedValue = value.format("YYYY-MM-DD")
+          if (field.columnType === "DATE" && value) {
+            formattedValue = dayjs(value as dayjs.Dayjs).format("YYYY-MM-DD")
           }
 
           return {
@@ -155,7 +154,7 @@ const EditCar: React.FC = () => {
 
   const renderField = (field: CarValueDetail) => {
     const properties = JSON.parse(field.uiFieldProperties || "{}")
-    const width = properties.width || 300
+    const width = "100%" 
     const disabled = properties.disabled || false
 
     let fieldComponent
@@ -253,8 +252,10 @@ const EditCar: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <Title level={2}>차량 수정</Title>
+    <div className="p-4 sm:p-6">
+      <Title level={2} className="text-center sm:text-left">
+        차량 수정
+      </Title>
 
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         {Object.entries(groupedFields).map(([collapseId, fields]) => {
@@ -266,7 +267,7 @@ const EditCar: React.FC = () => {
             <Card key={collapseId} className="mb-4">
               <Collapse defaultActiveKey={[collapseId]}>
                 <Panel header={collapseTitle} key={collapseId}>
-                  <Row gutter={[24, 0]}>
+                  <Row gutter={[16, 0]}>
                     {fields.map((field) => (
                       <Col key={field.defineId} xs={24} sm={12} md={8} lg={8}>
                         {renderField(field)}
@@ -279,7 +280,7 @@ const EditCar: React.FC = () => {
           )
         })}
 
-        <Space>
+        <Space wrap className="flex justify-center sm:justify-start">
           <Button type="primary" htmlType="submit" loading={loading}>
             저장
           </Button>

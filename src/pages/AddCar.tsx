@@ -85,10 +85,10 @@ const AddCar: React.FC = () => {
         .filter(Boolean)
 
       await dispatch(createCar(formattedValues as any))
-      message.success("차량이 성공적으로 추가되었습니다. (Created)")
+      message.success("차량이 성공적으로 추가되었습니다.")
       navigate("/cars")
     } catch (error) {
-      message.error("차량 추가 중 오류가 발생했습니다. (Error)")
+      message.error("차량 추가 중 오류가 발생했습니다.")
       console.error(error)
     } finally {
       setLoading(false)
@@ -97,7 +97,7 @@ const AddCar: React.FC = () => {
 
   const renderField = (field: FieldDefinition) => {
     const properties = JSON.parse(field.uiFieldProperties || "{}")
-    const width = properties.width || 300
+    const width = "100%" 
     const disabled = properties.disabled || false
 
     let fieldComponent
@@ -196,8 +196,10 @@ const AddCar: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <Title level={2}>차량 추가</Title>
+    <div className="p-4 sm:p-6">
+      <Title level={2} className="text-center sm:text-left">
+        차량 추가
+      </Title>
 
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         {Object.entries(groupedFields).map(([collapseId, fields]) => {
@@ -209,7 +211,7 @@ const AddCar: React.FC = () => {
             <Card key={collapseId} className="mb-4">
               <Collapse defaultActiveKey={[collapseId]}>
                 <Panel header={collapseTitle} key={collapseId}>
-                  <Row gutter={[24, 0]}>
+                  <Row gutter={[16, 0]}>
                     {fields.map((field) => (
                       <Col key={field.defineId} xs={24} sm={12} md={8} lg={8}>
                         {renderField(field)}
@@ -222,7 +224,7 @@ const AddCar: React.FC = () => {
           )
         })}
 
-        <Space>
+        <Space wrap className="flex justify-center sm:justify-start">
           <Button type="primary" htmlType="submit" loading={loading}>
             저장
           </Button>

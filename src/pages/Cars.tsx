@@ -13,17 +13,9 @@ import {
   ReloadOutlined,
   MoreOutlined,
 } from "@ant-design/icons"
-import {
-  fetchTableHeaders,
-  fetchCars,
-  setSearchParams,
-  resetSearchParams,
-  deleteCar,
-  type TableHeader,
-  type CarValue,
-} from "../redux/features/car-slice"
 import * as XLSX from "xlsx"
 import { AppDispatch, RootState } from "../redux/store"
+import { CarValue, deleteCar, fetchCars, fetchTableHeaders, resetSearchParams, setSearchParams, TableHeader } from "../redux/features/car-slice"
 import Loading from "../components/Loading"
 
 const { Title } = Typography
@@ -48,8 +40,10 @@ const Cars: React.FC = () => {
   }
 
   useEffect(() => {
-    dispatch(setSearchParams({ keyword, state, page: 1 }))
-  }, [state])
+    if (state !== undefined) {
+      dispatch(setSearchParams({ keyword, state, page: 1 }))
+    }
+  }, [state, dispatch, keyword])
 
   const handleReset = () => {
     setKeyword(null)
@@ -57,8 +51,23 @@ const Cars: React.FC = () => {
     dispatch(resetSearchParams())
   }
 
-  const handleTableChange = (pagination: any) => {
-    dispatch(setSearchParams({ page: pagination.current, size: pagination.pageSize }))
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    dispatch(
+      setSearchParams({
+        page: pagination.current,
+        size: pagination.pageSize,
+      }),
+    )
+
+    if (sorter && sorter.field && sorter.order) {
+      const order = sorter.order === "ascend" ? "ASC" : "DESC"
+      dispatch(
+        setSearchParams({
+          order: order,
+          field: sorter.field,
+        }),
+      )
+    }
   }
 
   const handleDelete = (objectUUID: string) => {
@@ -113,13 +122,15 @@ const Cars: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6">
-      <Title level={2} className=" text-center sm:text-left">차량 (Car)</Title>
+      <Title level={2} className="text-center sm:text-left">
+        차량
+      </Title>
 
       <Card className="mb-4">
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={8} lg={6}>
             <Input
-              placeholder="검색어 (search)"
+              placeholder="검색어"
               value={keyword || ""}
               onChange={(e) => setKeyword(e.target.value)}
               prefix={<SearchOutlined />}
@@ -130,78 +141,78 @@ const Cars: React.FC = () => {
           {expandSearch && (
             <Col xs={24} sm={12} md={8} lg={6}>
               <Select
-                placeholder="상태 (state)"
+                placeholder="상태"
                 style={{ width: "100%" }}
                 value={state}
                 onChange={(value) => setState(value)}
                 allowClear
               >
-                <Option value="ACTIVE">사용 (active) </Option>
-                <Option value="SOFT_DELETED">삭제 (SOFT_DELETED) </Option>
+                <Option value="ACTIVE">사용</Option>
+                <Option value="SOFT_DELETED">삭제</Option>
               </Select>
             </Col>
           )}
 
           <Col xs={24} sm={24} md={8} lg={12}>
-            <Space>
+            <Space wrap className="flex justify-center sm:justify-start">
               <Button type="primary" onClick={handleSearch} icon={<SearchOutlined />}>
-                조회 (find button)
+                조회
               </Button>
               <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                초기화 (reset button)
+                초기화
               </Button>
               <Button type="text" icon={<MoreOutlined />} onClick={() => setExpandSearch(!expandSearch)}>
-                {expandSearch ? "접기" : "더보기 (see more)"}
+                {expandSearch ? "접기" : "더보기"}
               </Button>
             </Space>
           </Col>
         </Row>
       </Card>
 
-      <div className="mb-4 flex justify-between items-center">
-        <Space>
-          <span>선택된 항목 (selected items): {selectedRowKeys.length}</span>
-          {selectedRowKeys.length > 0 && <Button onClick={() => setSelectedRowKeys([])}>지우기 (clear) </Button>}
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <Space className="mb-2 sm:mb-0">
+          <span>선택된 항목: {selectedRowKeys.length}</span>
+          {selectedRowKeys.length > 0 && <Button onClick={() => setSelectedRowKeys([])}>지우기</Button>}
         </Space>
-        <Space>
+        <Space wrap className="flex justify-center sm:justify-end">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/cars/add")}>
-            추가 (add)
+            추가
           </Button>
           <Button icon={<DownloadOutlined />} onClick={handleExcelDownload}>
-            엑셀 다운로드 (excel download)
+            엑셀 다운로드
           </Button>
         </Space>
       </div>
 
-      {
-        loading ? (
-          <Loading tip="차량 데이터를 불러오는 중..." />
-        ) : (
+      {loading ? (
+        <Loading tip="차량 데이터를 불러오는 중..." />
+      ) : (
+        <div className="overflow-x-auto">
           <Table
-        rowSelection={rowSelection}
-        columns={columns}
-        dataSource={cars}
-        rowKey="objectUUID"
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          showSizeChanger: true,
-          showTotal: (total) => `총 ${total}개 항목`,
-          pageSizeOptions: ["10", "20", "50", "100"],
-          onChange: (page, pageSize) => {
-            dispatch(setSearchParams({ page, size: pageSize }))
-          },
-        }}
-        onChange={handleTableChange}
-        loading={loading}
-        scroll={{ x: "max-content" }}
-        locale={{ emptyText: "데이터 없음 (no data)" }}
-      />
-        )
-      }
+            rowSelection={rowSelection}
+            columns={columns}
+            dataSource={cars}
+            rowKey="objectUUID"
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              showTotal: (total) => `총 ${total}개 항목`,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              onChange: (page, pageSize) => {
+                dispatch(setSearchParams({ page, size: pageSize }))
+              },
+            }}
+            onChange={handleTableChange}
+            scroll={{ x: "max-content" }}
+            locale={{ emptyText: "데이터 없음" }}
+          />
+        </div>
+      )}
     </div>
   )
 }
 
 export default Cars
+
