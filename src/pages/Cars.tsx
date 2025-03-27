@@ -24,6 +24,7 @@ import {
 } from "../redux/features/car-slice"
 import * as XLSX from "xlsx"
 import { AppDispatch, RootState } from "../redux/store"
+import Loading from "../components/Loading"
 
 const { Title } = Typography
 const { Option } = Select
@@ -46,6 +47,10 @@ const Cars: React.FC = () => {
     dispatch(setSearchParams({ keyword, state, page: 1 }))
   }
 
+  useEffect(() => {
+    dispatch(setSearchParams({ keyword, state, page: 1 }))
+  }, [state])
+
   const handleReset = () => {
     setKeyword(null)
     setState(null)
@@ -53,7 +58,7 @@ const Cars: React.FC = () => {
   }
 
   const handleTableChange = (pagination: any) => {
-    dispatch(setSearchParams({ page: pagination.current }))
+    dispatch(setSearchParams({ page: pagination.current, size: pagination.pageSize }))
   }
 
   const handleDelete = (objectUUID: string) => {
@@ -168,7 +173,11 @@ const Cars: React.FC = () => {
         </Space>
       </div>
 
-      <Table
+      {
+        loading ? (
+          <Loading tip="차량 데이터를 불러오는 중..." />
+        ) : (
+          <Table
         rowSelection={rowSelection}
         columns={columns}
         dataSource={cars}
@@ -179,12 +188,18 @@ const Cars: React.FC = () => {
           total: pagination.total,
           showSizeChanger: true,
           showTotal: (total) => `총 ${total}개 항목`,
+          pageSizeOptions: ["10", "20", "50", "100"],
+          onChange: (page, pageSize) => {
+            dispatch(setSearchParams({ page, size: pageSize }))
+          },
         }}
-        loading={loading}
         onChange={handleTableChange}
+        loading={loading}
         scroll={{ x: "max-content" }}
         locale={{ emptyText: "데이터 없음 (no data)" }}
       />
+        )
+      }
     </div>
   )
 }
