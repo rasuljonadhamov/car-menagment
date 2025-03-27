@@ -89,7 +89,7 @@ const initialState: CarState = {
   cars: [],
   pagination: {
     current: 1,
-    pageSize: 50,
+    pageSize: 10,
     total: 0,
   },
   loading: false,
@@ -99,7 +99,7 @@ const initialState: CarState = {
     state: null,
     keyword: null,
     page: 1,
-    size: 50,
+    size: 10,
     order: null,
     field: "",
   },
